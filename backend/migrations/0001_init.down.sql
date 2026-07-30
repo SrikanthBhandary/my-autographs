@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS entries;
+DROP TABLE IF EXISTS share_links;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;

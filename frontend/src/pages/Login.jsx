@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Feather } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -27,7 +28,8 @@ export default function Login() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h1>Log in</h1>
+        <div className="brand"><span className="brand-mark"><Feather size={16} /></span> Keepsake</div>
+        <h1>Welcome back</h1>
         {error && <p className="error">{error}</p>}
         <label>
           Email

@@ -1,11 +1,26 @@
 :root {
-  --ink: #232320;
-  --paper: #faf9f6;
-  --paper-raised: #ffffff;
-  --line: #e2e0d8;
-  --accent: #2f5d50; /* deep forest green — a keepsake-book feel, not the usual AI cream/terracotta */
-  --accent-soft: #e7efec;
+  /* --- palette --- */
+  --ink: #1c1e2a;
+  --ink-soft: #565a6e;
+  --paper: #f1efe9;
+  --paper-raised: #fffdf9;
+  --line: #e2ded2;
+  --accent: #2f5d50;       /* deep bottle-green — the "ink" of the book */
+  --accent-dark: #234a40;
+  --accent-soft: #e6ede9;
+  --brass: #b8935f;        /* foil-stamp gold, used sparingly */
+  --brass-soft: #f3ead9;
   --danger: #a13f3f;
+  --danger-soft: #f5e8e6;
+
+  /* --- type --- */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* --- shape --- */
+  --radius: 10px;
+  --shadow-card: 0 1px 2px rgba(28,30,42,0.04), 0 4px 16px rgba(28,30,42,0.06);
+  --shadow-raised: 0 8px 30px rgba(28,30,42,0.10);
 }
 
 * { box-sizing: border-box; }
@@ -14,141 +29,279 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2 {
-  font-family: Georgia, "Iowan Old Style", serif;
+h1, h2, h3 {
+  font-family: var(--font-display);
   font-weight: 500;
-  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- buttons --- */
 button {
   font: inherit;
+  font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--accent);
   background: var(--accent);
   color: white;
-  border-radius: 6px;
-  padding: 0.5em 1em;
+  border-radius: 8px;
+  padding: 0.55em 1.1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
 }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-button.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+button:hover:not(:disabled) { background: var(--accent-dark); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+button.ghost {
+  background: transparent;
+  color: var(--accent);
+}
+button.ghost:hover:not(:disabled) { background: var(--accent-soft); }
+
+button.danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+button.danger:hover:not(:disabled) { background: var(--danger-soft); }
+
+button.icon-btn {
+  padding: 0.5em;
+  border-radius: 50%;
+}
+
+/* --- form fields --- */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
 
 input, select, textarea {
   font: inherit;
-  padding: 0.5em 0.7em;
+  padding: 0.65em 0.85em;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--paper-raised);
   color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-a { color: var(--accent); }
+.error { color: var(--danger); font-size: 0.9em; }
+.empty { color: var(--ink-soft); font-style: italic; }
 
-.error { color: var(--danger); }
-.empty { color: #7a7a72; font-style: italic; }
-.tag {
-  font-size: 0.75em;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 0.15em 0.5em;
-  border-radius: 4px;
-  margin-left: 0.5em;
-}
-
-/* --- auth pages --- */
-.auth-page {
-  min-height: 100vh;
-  display: flex;
+/* --- category "stamp" badge --- */
+.stamp {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--brass);
+  color: var(--brass);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: var(--brass-soft);
 }
-.auth-card {
+
+/* ============================================================
+   APP SHELL (Dashboard / Review / Book — authenticated owner)
+   ============================================================ */
+.app-shell {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+}
+
+.app-sidebar {
   background: var(--paper-raised);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 380px;
+  border-right: 1px solid var(--line);
+  padding: 1.75rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.75rem;
 }
-.auth-card label { display: flex; flex-direction: column; gap: 0.35em; font-size: 0.9em; }
-.auth-switch { font-size: 0.9em; text-align: center; margin: 0; }
 
-/* --- shared page layout --- */
-.page {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-}
-.page-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-}
-.page-header nav { display: flex; gap: 1.25rem; }
-
-/* --- dashboard --- */
-.inline-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-.category-tree { list-style: none; padding: 0; }
-.category-tree ul { list-style: none; padding-left: 1.5rem; }
-.category-row {
+.brand {
   display: flex;
   align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+.brand .brand-mark {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--brass-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.2rem; }
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+.sidebar-nav a:hover { background: var(--accent-soft); text-decoration: none; color: var(--ink); }
+.sidebar-nav a.active { background: var(--accent-soft); color: var(--accent-dark); }
+
+.category-nav-section { flex: 1; overflow-y: auto; }
+.category-nav-section .eyebrow { padding: 0 0.7rem; margin-bottom: 0.5rem; display: block; }
+.category-nav-tree { list-style: none; margin: 0; padding: 0; }
+.category-nav-tree ul { list-style: none; padding-left: 1.5rem; margin: 0; }
+.category-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.category-nav-row:hover { background: var(--accent-soft); }
+.category-nav-row.selected { background: var(--accent); color: white; }
+.category-nav-row.selected .stamp { border-color: white; color: white; background: rgba(255,255,255,0.15); }
+
+.app-main {
+  padding: 2.5rem 3rem;
+  max-width: 880px;
+}
+
+.main-header {
+  margin-bottom: 2rem;
+}
+.main-header h1 { font-size: 1.9rem; margin-bottom: 0.35rem; }
+.main-header p { color: var(--ink-soft); margin: 0; }
+
+/* --- panel card, used for "add category" / share link panels --- */
+.panel {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.05rem;
+  margin-bottom: 1.25rem;
+}
+.panel-title svg { color: var(--brass); }
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.field-grid label:first-child { grid-column: 1 / -1; }
+
+.panel-actions { display: flex; justify-content: flex-end; }
+
+.share-url-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--line);
-}
-.share-url {
-  font-size: 0.85em;
   background: var(--accent-soft);
-  padding: 0.5em 0.75em;
-  border-radius: 6px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  font-size: 0.85em;
+  color: var(--accent-dark);
   word-break: break-all;
+  margin-top: 1rem;
 }
+
+.empty-panel {
+  text-align: center;
+  padding: 3.5rem 2rem;
+  color: var(--ink-soft);
+}
+.empty-panel svg { color: var(--brass); margin-bottom: 1rem; }
 
 /* --- entries / review --- */
 .entry-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
 .entry-card {
   background: var(--paper-raised);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.4rem 1.6rem;
 }
-.entry-meta { display: flex; justify-content: space-between; color: #7a7a72; font-size: 0.85em; margin-bottom: 0.5em; }
-.thumb-row { display: flex; gap: 0.5rem; margin: 0.75rem 0; flex-wrap: wrap; }
-.thumb-row img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
-.entry-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.entry-meta { display: flex; justify-content: space-between; align-items: center; color: var(--ink-soft); font-size: 0.85em; margin-bottom: 0.6em; }
+.entry-meta strong { color: var(--ink); font-family: var(--font-display); font-size: 1.1rem; font-weight: 500; }
+.thumb-row { display: flex; gap: 0.5rem; margin: 0.85rem 0; flex-wrap: wrap; }
+.thumb-row img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+.entry-actions { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
 
 /* --- book view --- */
+.book-page .main-header { text-align: center; }
 .book { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 2rem; }
 .book-leaf {
   background: var(--paper-raised);
   border: 1px solid var(--line);
-  border-radius: 4px 12px 12px 4px;
-  box-shadow: 4px 4px 0 var(--line);
-  padding: 2rem;
-  width: 380px;
-  min-height: 420px;
+  border-radius: 4px 16px 16px 4px;
+  box-shadow: var(--shadow-raised);
+  padding: 2.5rem;
+  width: 400px;
+  min-height: 440px;
   text-align: center;
+  position: relative;
 }
-.book-leaf img { max-width: 100%; border-radius: 6px; margin-bottom: 1rem; }
+.book-leaf::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 12px; bottom: 12px;
+  width: 4px;
+  background: var(--brass);
+  border-radius: 2px 0 0 2px;
+}
+.book-leaf img { max-width: 100%; border-radius: 8px; margin-bottom: 1.25rem; }
+.book-leaf h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
 .book-nav {
   background: transparent;
   color: var(--accent);
@@ -157,28 +310,81 @@ a { color: var(--accent); }
   line-height: 1;
   padding: 0.5rem;
 }
-.book-nav:disabled { color: var(--line); }
-.page-number { display: block; margin-top: 1.5rem; color: #7a7a72; font-size: 0.85em; }
+.book-nav:hover:not(:disabled) { background: transparent; color: var(--accent-dark); }
+.book-nav:disabled { color: var(--line); border-color: transparent; background: transparent; }
+.page-number { display: block; margin-top: 1.75rem; color: var(--ink-soft); font-size: 0.8rem; letter-spacing: 0.04em; }
 
-/* --- public submit page --- */
+/* ============================================================
+   AUTH PAGES (Login / Signup)
+   ============================================================ */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at 15% 20%, var(--accent-soft), transparent 45%),
+    radial-gradient(circle at 85% 80%, var(--brass-soft), transparent 45%),
+    var(--paper);
+}
+.auth-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-raised);
+  padding: 2.75rem;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.auth-card .brand { margin-bottom: 0.25rem; }
+.auth-card h1 { font-size: 1.6rem; }
+.auth-switch { font-size: 0.9em; text-align: center; margin: 0; color: var(--ink-soft); }
+
+/* ============================================================
+   PUBLIC GUEST SUBMISSION PAGE
+   ============================================================ */
 .submit-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: var(--accent-soft);
+  background:
+    radial-gradient(circle at 20% 15%, var(--accent-soft), transparent 50%),
+    radial-gradient(circle at 80% 85%, var(--brass-soft), transparent 50%),
+    var(--paper);
 }
 .submit-card {
   background: var(--paper-raised);
-  border-radius: 12px;
-  padding: 2.5rem;
+  border-radius: 18px;
+  padding: 2.75rem;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  gap: 1.1rem;
+  box-shadow: var(--shadow-raised);
+  position: relative;
 }
-.submit-card label { display: flex; flex-direction: column; gap: 0.35em; font-size: 0.9em; }
-.preview-block { background: var(--accent-soft); border-radius: 8px; padding: 1rem; }
+.submit-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 2.75rem; right: 2.75rem;
+  height: 4px;
+  background: var(--brass);
+  border-radius: 0 0 4px 4px;
+}
+.submit-card h1 { font-size: 1.5rem; }
+.preview-block { background: var(--accent-soft); border-radius: 10px; padding: 1.1rem 1.3rem; }
+.preview-block strong { font-family: var(--font-display); font-size: 1.15rem; }
+
+@media (max-width: 720px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .app-sidebar { border-right: none; border-bottom: 1px solid var(--line); }
+  .app-main { padding: 1.5rem; }
+  .field-grid { grid-template-columns: 1fr; }
+}

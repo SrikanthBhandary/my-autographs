@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/yourorg/autograph-backend/internal/config"
 	"github.com/yourorg/autograph-backend/internal/db"
 	"github.com/yourorg/autograph-backend/internal/handlers"
@@ -14,6 +15,11 @@ import (
 )
 
 func main() {
+	// Load .env into the process environment if present. In production you'd
+	// typically set real env vars instead and this becomes a no-op (the file
+	// just won't exist), which is why we ignore the error here.
+	_ = godotenv.Load()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config error: %v", err)
@@ -40,8 +46,6 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	handler := middleware.CORS(os.Getenv("FRONTEND_ORIGIN"))(mux)
-
 	// --- Public auth routes ---
 	mux.HandleFunc("POST /api/auth/signup", authH.Signup)
 	mux.HandleFunc("POST /api/auth/login", authH.Login)
@@ -61,6 +65,8 @@ func main() {
 	mux.Handle("GET /api/entries", requireAuth(http.HandlerFunc(entryH.List)))
 	mux.Handle("PATCH /api/entries/{id}/approve", requireAuth(http.HandlerFunc(entryH.Approve)))
 	mux.Handle("PATCH /api/entries/{id}/reject", requireAuth(http.HandlerFunc(entryH.Reject)))
+
+	handler := middleware.CORS(os.Getenv("FRONTEND_ORIGIN"))(mux)
 
 	log.Printf("listening on :%s", cfg.Server.Port)
 	if err := http.ListenAndServe(":"+cfg.Server.Port, handler); err != nil {

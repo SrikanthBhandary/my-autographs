@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Check, X, ClipboardCheck } from "lucide-react";
+import AppShell from "../components/AppShell";
 import { api } from "../api/client";
 
 export default function Review() {
@@ -29,16 +30,21 @@ export default function Review() {
   }
 
   return (
-    <div className="page">
-      <header className="page-header">
+    <AppShell>
+      <header className="main-header">
+        <span className="eyebrow">Moderation</span>
         <h1>Review submissions</h1>
-        <nav>
-          <Link to="/dashboard">Back to dashboard</Link>
-        </nav>
+        <p>Approve entries to add them to your book, or reject anything you'd rather not keep.</p>
       </header>
 
       {error && <p className="error">{error}</p>}
-      {entries.length === 0 && <p className="empty">Nothing waiting for review right now.</p>}
+
+      {entries.length === 0 && !error && (
+        <div className="empty-panel">
+          <ClipboardCheck size={36} />
+          <p>Nothing waiting for review right now.</p>
+        </div>
+      )}
 
       <ul className="entry-list">
         {entries.map((entry) => (
@@ -57,12 +63,12 @@ export default function Review() {
             )}
             {entry.audio_url && <audio controls src={entry.audio_url} />}
             <div className="entry-actions">
-              <button onClick={() => approve(entry.id)}>Approve</button>
-              <button className="danger" onClick={() => reject(entry.id)}>Reject</button>
+              <button onClick={() => approve(entry.id)}><Check size={16} /> Approve</button>
+              <button className="danger" onClick={() => reject(entry.id)}><X size={16} /> Reject</button>
             </div>
           </li>
         ))}
       </ul>
-    </div>
+    </AppShell>
   );
 }

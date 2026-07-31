@@ -42,9 +42,13 @@ you want proper up/down migration tracking as the schema evolves.)
 ## 4. Run the server
 
 ```bash
-export $(cat .env | xargs)   # or use a tool like `direnv` / `godotenv`
 go run ./cmd/api
 ```
+
+The app loads `.env` automatically on startup (via `github.com/joho/godotenv`),
+so as long as `.env` sits next to `go.mod` in `backend/`, no manual exporting
+is needed. In production, just set real environment variables instead — the
+`.env` file won't exist there, which is fine, `godotenv.Load()` silently no-ops.
 
 Server starts on `:8080` (or `$PORT`).
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/lib/pq"
@@ -85,11 +86,13 @@ func (h *EntryHandler) Submit(w http.ResponseWriter, r *http.Request) {
 }
 
 // List returns entries for the authenticated owner, optionally filtered by
-// ?status=pending|approved|rejected. Used for both the moderation queue and
-// the final book view (status=approved).
+// ?status=pending|approved|rejected and/or ?category_id=<uuid>. Used for the
+// moderation queue and the book view (status=approved, optionally scoped to
+// one category).
 func (h *EntryHandler) List(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFrom(r)
 	status := r.URL.Query().Get("status")
+	categoryID := r.URL.Query().Get("category_id")
 
 	query := `
 		SELECT e.id, e.category_id, e.share_link_id, e.guest_name, e.note, e.image_urls, e.audio_url, e.status, e.created_at
@@ -99,8 +102,12 @@ func (h *EntryHandler) List(w http.ResponseWriter, r *http.Request) {
 	`
 	args := []interface{}{userID}
 	if status != "" {
-		query += " AND e.status = $2"
 		args = append(args, status)
+		query += fmt.Sprintf(" AND e.status = $%d", len(args))
+	}
+	if categoryID != "" {
+		args = append(args, categoryID)
+		query += fmt.Sprintf(" AND e.category_id = $%d", len(args))
 	}
 	query += " ORDER BY e.created_at DESC"
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { Feather, Image, Mic } from "lucide-react";
 import { api } from "../api/client";
 
 export default function Submit() {
@@ -45,6 +46,7 @@ export default function Submit() {
     return (
       <div className="submit-page">
         <div className="submit-card">
+          <div className="brand"><span className="brand-mark"><Feather size={16} /></span> Keepsake</div>
           <h1>Thanks, {guestName}!</h1>
           <p>Your autograph has been sent and is waiting for approval.</p>
         </div>
@@ -78,6 +80,7 @@ export default function Submit() {
   return (
     <div className="submit-page">
       <form className="submit-card" onSubmit={handleReview}>
+        <div className="brand"><span className="brand-mark"><Feather size={16} /></span> Keepsake</div>
         <h1>Leave your autograph</h1>
         {error && <p className="error">{error}</p>}
         <label>
@@ -89,11 +92,11 @@ export default function Submit() {
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} />
         </label>
         <label>
-          Photos
+          <span style={{ display: "flex", alignItems: "center", gap: "0.4em" }}><Image size={15} /> Photos</span>
           <input type="file" accept="image/*" multiple onChange={(e) => setImages(Array.from(e.target.files))} />
         </label>
         <label>
-          Audio message (optional)
+          <span style={{ display: "flex", alignItems: "center", gap: "0.4em" }}><Mic size={15} /> Audio message (optional)</span>
           <input type="file" accept="audio/*" onChange={(e) => setAudio(e.target.files[0] || null)} />
         </label>
         <button type="submit">Preview</button>

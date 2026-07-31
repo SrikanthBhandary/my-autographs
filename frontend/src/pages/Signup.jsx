@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Feather } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
@@ -28,6 +29,7 @@ export default function Signup() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
+        <div className="brand"><span className="brand-mark"><Feather size={16} /></span> Keepsake</div>
         <h1>Create your account</h1>
         {error && <p className="error">{error}</p>}
         <label>

@@ -62,8 +62,12 @@ export const api = {
     }).then(handle),
 
   // --- entries ---
-  listEntries: (status) =>
-    fetch(`${API_URL}/entries?status=${status}`, { headers: authHeaders() }).then(handle),
+  listEntries: (status, categoryId) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (categoryId) params.set("category_id", categoryId);
+    return fetch(`${API_URL}/entries?${params}`, { headers: authHeaders() }).then(handle);
+  },
 
   approveEntry: (id) =>
     fetch(`${API_URL}/entries/${id}/approve`, { method: "PATCH", headers: authHeaders() }).then(handle),

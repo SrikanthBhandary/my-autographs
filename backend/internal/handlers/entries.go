@@ -50,7 +50,6 @@ func (h *EntryHandler) Submit(w http.ResponseWriter, r *http.Request) {
 			imageURLs = append(imageURLs, url)
 		}
 	}
-	fmt.Println("Test", imageURLs)
 
 	// Optional single audio file (field name "audio").
 	var audioURL *string

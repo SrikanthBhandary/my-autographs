@@ -1,4 +1,4 @@
-import { Feather, LayoutGrid, ClipboardCheck, BookOpen, LogOut } from "lucide-react";
+import { Feather, LayoutGrid, ClipboardCheck, BookOpen, Cloud, LogOut } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -38,6 +38,9 @@ export default function AppShell({ children, categories = [], selectedId, onSele
           </NavLink>
           <NavLink to="/review" className={({ isActive }) => (isActive ? "active" : "")}>
             <ClipboardCheck size={16} /> Review submissions
+          </NavLink>
+          <NavLink to="/wordcloud" className={({ isActive }) => (isActive ? "active" : "")}>
+            <Cloud size={16} /> Word cloud
           </NavLink>
           <NavLink to="/book" className={({ isActive }) => (isActive ? "active" : "")}>
             <BookOpen size={16} /> View book

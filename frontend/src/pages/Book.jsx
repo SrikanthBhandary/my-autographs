@@ -39,7 +39,10 @@ export default function Book() {
     return ids;
   }, [selectedId, categories]);
 
-  const entries = scopedCategoryIds ? allEntries.filter((e) => scopedCategoryIds.has(e.category_id)) : allEntries;
+  const entries = useMemo(
+    () => (scopedCategoryIds ? allEntries.filter((e) => scopedCategoryIds.has(e.category_id)) : allEntries),
+    [scopedCategoryIds, allEntries]
+  );
   const selectedCategory = categories.find((c) => c.id === selectedId);
 
   function selectCategory(id) {

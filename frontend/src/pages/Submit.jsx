@@ -32,7 +32,12 @@ export default function Submit() {
     if (signatureRef.current && !signatureRef.current.isEmpty()) {
       setSignaturePreview(signatureRef.current.toDataURL());
       const blob = await signatureRef.current.toBlob();
-      setSignatureBlob(blob);
+      if (blob instanceof Blob) {
+        setSignatureBlob(blob);
+      } else {
+        console.warn("Signature capture did not produce a Blob, skipping it:", blob);
+        setSignatureBlob(null);
+      }
     } else {
       setSignaturePreview(null);
       setSignatureBlob(null);
@@ -50,7 +55,7 @@ export default function Submit() {
       formData.append("note", note);
       images.forEach((img) => formData.append("images", img));
       if (audio) formData.append("audio", audio);
-      if (signatureBlob) formData.append("images", signatureBlob, "signature.png");
+      if (signatureBlob instanceof Blob) formData.append("images", signatureBlob, "signature.png");
 
       await api.submitEntry(token, formData);
       setStep("done");

@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Review from "./pages/Review";
 import Book from "./pages/Book";
+import WordCloud from "./pages/WordCloud";
 import Submit from "./pages/Submit";
 
 export default function App() {
@@ -38,6 +39,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Book />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/wordcloud"
+            element={
+              <RequireAuth>
+                <WordCloud />
               </RequireAuth>
             }
           />

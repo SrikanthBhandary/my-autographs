@@ -97,7 +97,15 @@ const SignaturePad = forwardRef(function SignaturePad({ initialImage } = {}, ref
     toDataURL: () => canvasRef.current.toDataURL("image/png"),
     toBlob: () =>
       new Promise((resolve) => {
-        canvasRef.current.toBlob(resolve, "image/png");
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          resolve(null);
+          return;
+        }
+        canvas.toBlob((blob) => {
+          if (!blob) console.warn("SignaturePad: canvas.toBlob() returned null");
+          resolve(blob);
+        }, "image/png");
       }),
   }));
 

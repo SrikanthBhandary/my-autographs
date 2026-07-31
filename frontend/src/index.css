@@ -204,7 +204,7 @@ input:focus, select:focus, textarea:focus {
 
 .app-main {
   padding: 2.5rem 3rem;
-  max-width: 880px;
+  /* max-width: 880px; */
 }
 
 .main-header {
@@ -375,24 +375,36 @@ input:focus, select:focus, textarea:focus {
   height: 100%;
   min-height: 0; /* required so the child scroll area can actually shrink */
 }
-.leaf-photo {
-  width: 110px; height: 110px;
+.leaf-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 0.7rem;
+}
+.leaf-photos img {
+  width: 78px;
+  height: 78px;
+  object-fit: cover;
   border-radius: 6px;
-  overflow: hidden;
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
   flex-shrink: 0;
 }
-.leaf-photo img { width: 100%; height: 100%; object-fit: cover; }
+/* when there's just one image, let it be the hero rather than a small tile */
+.leaf-photos img:only-child {
+  width: 130px;
+  height: 130px;
+}
 .leaf-name { font-size: 1.2rem; margin: 0; flex-shrink: 0; }
 
-.leaf-note-scroll {
+.leaf-scroll {
   width: 100%;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y; /* let touch scroll this area instead of triggering a page flip */
-  padding: 0 0.25rem;
+  padding: 0.5rem 0.25rem 0;
 }
 .leaf-note {
   font-size: 0.92rem;
@@ -401,11 +413,11 @@ input:focus, select:focus, textarea:focus {
   margin: 0;
   white-space: pre-wrap;
 }
-.leaf-note-scroll::-webkit-scrollbar { width: 4px; }
-.leaf-note-scroll::-webkit-scrollbar-track { background: transparent; }
-.leaf-note-scroll::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 2px; }
+.leaf-scroll::-webkit-scrollbar { width: 4px; }
+.leaf-scroll::-webkit-scrollbar-track { background: transparent; }
+.leaf-scroll::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 2px; }
 
-.leaf-audio { flex-shrink: 0; width: 100%; }
+.leaf-audio { flex-shrink: 0; width: 100%; margin-top: 0.6rem; }
 
 .ibooks-progress {
   max-width: 340px;
@@ -417,7 +429,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.78rem;
 }
 .ibooks-progress-track {
-  flex: 1;
+  /* flex: 1; */
   height: 3px;
   background: var(--line);
   border-radius: 2px;
@@ -500,6 +512,77 @@ input:focus, select:focus, textarea:focus {
 .submit-card h1 { font-size: 1.5rem; }
 .preview-block { background: var(--accent-soft); border-radius: 10px; padding: 1.1rem 1.3rem; }
 .preview-block strong { font-family: var(--font-display); font-size: 1.15rem; }
+.signature-preview-img {
+  max-width: 100%;
+  max-height: 120px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* --- signature / drawing pad --- */
+.signature-pad { display: flex; flex-direction: column; gap: 0.6rem; }
+.signature-canvas-wrap {
+  position: relative;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  overflow: hidden;
+}
+.signature-canvas {
+  display: block;
+  width: 100%;
+  height: 170px;
+  cursor: crosshair;
+  touch-action: none; /* let the pen/finger draw instead of scrolling the page */
+  background: transparent;
+  position: relative;
+  z-index: 1;
+}
+.signature-guideline {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 2.2rem;
+  pointer-events: none;
+}
+.signature-guideline::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 2.5rem;
+  height: 1px;
+  background: var(--line);
+}
+.signature-guideline span {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: #c9c4b4;
+  font-size: 0.9rem;
+}
+.signature-pad-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.signature-inks { display: flex; gap: 0.5rem; }
+.ink-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.ink-swatch.selected {
+  border-color: var(--paper-raised);
+  box-shadow: 0 0 0 2px var(--ink-soft);
+}
 
 @media (max-width: 720px) {
   .app-shell { grid-template-columns: 1fr; }

@@ -110,17 +110,17 @@ export default function Book() {
               {entries.map((entry) => (
                 <Page key={entry.id}>
                   <div className="leaf-content">
-                    {entry.image_urls?.[0] && (
-                      <div className="leaf-photo">
-                        <img src={entry.image_urls[0]} alt="" />
-                      </div>
-                    )}
                     <h3 className="leaf-name">{entry.guest_name}</h3>
-                    {entry.note && (
-                      <div className="leaf-note-scroll">
-                        <p className="leaf-note">{entry.note}</p>
-                      </div>
-                    )}
+                    <div className="leaf-scroll">
+                      {entry.image_urls?.length > 0 && (
+                        <div className="leaf-photos">
+                          {entry.image_urls.map((url) => (
+                            <img key={url} src={url} alt="" />
+                          ))}
+                        </div>
+                      )}
+                      {entry.note && <p className="leaf-note">{entry.note}</p>}
+                    </div>
                     {entry.audio_url && <audio className="leaf-audio" controls src={entry.audio_url} />}
                   </div>
                 </Page>

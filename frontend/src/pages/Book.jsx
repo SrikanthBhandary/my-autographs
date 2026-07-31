@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import HTMLFlipBook from "react-pageflip";
+import { ChevronLeft, ChevronRight, BookOpen, Feather } from "lucide-react";
 import AppShell from "../components/AppShell";
+import Page from "../components/Page";
 import { api } from "../api/client";
 
 export default function Book() {
   const [categories, setCategories] = useState([]);
   const [allEntries, setAllEntries] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [index, setIndex] = useState(0);
+  const [pageNum, setPageNum] = useState(0);
   const [error, setError] = useState("");
+  const bookRef = useRef(null);
 
   useEffect(() => {
     Promise.all([api.listCategories(), api.listEntries("approved")])
@@ -19,11 +22,9 @@ export default function Book() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // Selecting a top-level category (e.g. "School") should also include
-  // entries from its sub-categories (e.g. "School A", "School B") — so we
-  // walk the tree to collect every descendant id under whatever is selected.
+  // Selecting a top-level category also pulls in its sub-categories' entries.
   const scopedCategoryIds = useMemo(() => {
-    if (!selectedId) return null; // null = no filter, show everything
+    if (!selectedId) return null;
     const ids = new Set([selectedId]);
     let added = true;
     while (added) {
@@ -38,17 +39,18 @@ export default function Book() {
     return ids;
   }, [selectedId, categories]);
 
-  const entries = scopedCategoryIds
-    ? allEntries.filter((e) => scopedCategoryIds.has(e.category_id))
-    : allEntries;
-
+  const entries = scopedCategoryIds ? allEntries.filter((e) => scopedCategoryIds.has(e.category_id)) : allEntries;
   const selectedCategory = categories.find((c) => c.id === selectedId);
-  const entry = entries[index];
 
   function selectCategory(id) {
     setSelectedId(id);
-    setIndex(0);
+    setPageNum(0);
+    bookRef.current?.pageFlip()?.turnToPage(0);
   }
+
+  const totalLeaves = entries.length + 2; // + front cover + back cover
+  const atStart = pageNum === 0;
+  const atEnd = pageNum >= totalLeaves - 1;
 
   return (
     <AppShell categories={categories} selectedId={selectedId} onSelectCategory={selectCategory}>
@@ -72,23 +74,84 @@ export default function Book() {
           </div>
         )}
 
-        {entry && (
-          <div className="book">
-            <button className="book-nav icon-btn" onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}>
-              <ChevronLeft size={28} />
+        {entries.length > 0 && (
+          <div className="ibooks-shelf">
+            <button
+              className="ibooks-nav"
+              onClick={() => bookRef.current?.pageFlip()?.flipPrev()}
+              disabled={atStart}
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={22} />
             </button>
 
-            <div className="book-leaf">
-              {entry.image_urls?.[0] && <img src={entry.image_urls[0]} alt="" />}
-              <h2>{entry.guest_name}</h2>
-              {entry.note && <p>{entry.note}</p>}
-              {entry.audio_url && <audio controls src={entry.audio_url} />}
-              <span className="page-number">{index + 1} / {entries.length}</span>
+            <HTMLFlipBook
+              key={selectedId || "all"}
+              ref={bookRef}
+              width={300}
+              height={460}
+              size="fixed"
+              minWidth={260}
+              maxWidth={340}
+              minHeight={400}
+              maxHeight={520}
+              maxShadowOpacity={0.4}
+              showCover={true}
+              mobileScrollSupport={false}
+              className="ibooks-flip"
+              onFlip={(e) => setPageNum(e.data)}
+            >
+              <Page className="cover">
+                <div className="cover-mark"><Feather size={26} /></div>
+                <h2>{selectedCategory ? selectedCategory.name : "My Autograph Book"}</h2>
+                <span className="cover-sub">{entries.length} signatures collected</span>
+              </Page>
+
+              {entries.map((entry) => (
+                <Page key={entry.id}>
+                  <div className="leaf-content">
+                    {entry.image_urls?.[0] && (
+                      <div className="leaf-photo">
+                        <img src={entry.image_urls[0]} alt="" />
+                      </div>
+                    )}
+                    <h3 className="leaf-name">{entry.guest_name}</h3>
+                    {entry.note && (
+                      <div className="leaf-note-scroll">
+                        <p className="leaf-note">{entry.note}</p>
+                      </div>
+                    )}
+                    {entry.audio_url && <audio className="leaf-audio" controls src={entry.audio_url} />}
+                  </div>
+                </Page>
+              ))}
+
+              <Page className="cover back-cover">
+                <div className="cover-mark"><Feather size={22} /></div>
+                <span className="cover-sub">The end</span>
+              </Page>
+            </HTMLFlipBook>
+
+            <button
+              className="ibooks-nav"
+              onClick={() => bookRef.current?.pageFlip()?.flipNext()}
+              disabled={atEnd}
+              aria-label="Next page"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+        )}
+
+        {entries.length > 0 && (
+          <div className="ibooks-progress">
+            <div className="ibooks-progress-track">
+              <div
+                className="ibooks-progress-fill"
+                style={{ width: `${(pageNum / Math.max(totalLeaves - 1, 1)) * 100}%` }}
+              />
             </div>
-
-            <button className="book-nav icon-btn" onClick={() => setIndex((i) => Math.min(entries.length - 1, i + 1))} disabled={index === entries.length - 1}>
-              <ChevronRight size={28} />
-            </button>
+            <span>{Math.min(pageNum + 1, totalLeaves)} of {totalLeaves}</span>
           </div>
         )}
       </div>

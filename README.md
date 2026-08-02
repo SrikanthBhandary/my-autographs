@@ -18,7 +18,10 @@ autograph-app/
 cd backend
 cp .env.example .env   # set JWT_SECRET at minimum
 docker compose up -d    # local Postgres + MinIO (S3-compatible)
-psql "postgresql://postgres:postgres@localhost:5432/autograph?sslmode=disable" -f migrations/0001_init.up.sql
+# psql "postgresql://postgres:postgres@localhost:5432/autograph?sslmode=disable" -f migrations/0001_init.up.sql
+migrate -source file://migrations -database "postgres://postgres:postgres@localhost:5432/autograph?sslmode=disable" up
+
+export $(grep -v '^#' .env | xargs)
 go run ./cmd/api
 ```
 

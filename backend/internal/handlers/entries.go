@@ -1,19 +1,24 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/lib/pq"
+	"github.com/yourorg/autograph-backend/internal/mailer"
 	"github.com/yourorg/autograph-backend/internal/middleware"
 	"github.com/yourorg/autograph-backend/internal/models"
 	"github.com/yourorg/autograph-backend/internal/storage"
 )
 
 type EntryHandler struct {
-	DB      *sql.DB
-	Storage *storage.Storage
+	DB          *sql.DB
+	Storage     *storage.Storage
+	Mailer      *mailer.Mailer
+	FrontendURL string // base URL of the owner-facing app, e.g. http://localhost:5173
 }
 
 const maxUploadSize = 20 << 20 // 20MB per submission (images + audio combined)
@@ -78,6 +83,12 @@ func (h *EntryHandler) Submit(w http.ResponseWriter, r *http.Request) {
 
 	// Bump the link's use count so max_uses enforcement stays accurate.
 	_, _ = h.DB.ExecContext(ctx, `UPDATE share_links SET use_count = use_count + 1 WHERE id = $1`, sl.ID)
+
+	// Notify the owner by email, best-effort. Runs in the background with its
+	// own context (the request's context ends as soon as we respond below) so
+	// a slow or unconfigured mail server never delays or fails the guest's
+	// submission.
+	go h.notifyOwnerOfNewEntry(sl.CategoryID, sl.UserID, guestName)
 
 	writeJSON(w, http.StatusCreated, map[string]string{
 		"status":  "submitted",
@@ -159,4 +170,35 @@ func (h *EntryHandler) Approve(w http.ResponseWriter, r *http.Request) {
 
 func (h *EntryHandler) Reject(w http.ResponseWriter, r *http.Request) {
 	h.setStatus(w, r, models.StatusRejected)
+}
+
+// notifyOwnerOfNewEntry emails the category's owner that a new submission is
+// waiting for review. Uses its own background context — the request that
+// triggered it has already been responded to by the time this runs.
+func (h *EntryHandler) notifyOwnerOfNewEntry(categoryID, ownerUserID, guestName string) {
+	if h.Mailer == nil || !h.Mailer.Configured() {
+		return // notifications not set up — nothing to do
+	}
+
+	ctx := context.Background()
+
+	var ownerEmail, ownerName, categoryName string
+	err := h.DB.QueryRowContext(ctx, `
+		SELECT u.email, u.name, c.name
+		FROM users u
+		JOIN categories c ON c.user_id = u.id
+		WHERE u.id = $1 AND c.id = $2
+	`, ownerUserID, categoryID).Scan(&ownerEmail, &ownerName, &categoryName)
+	if err != nil {
+		log.Printf("notify owner: lookup failed: %v", err)
+		return
+	}
+
+	subject := fmt.Sprintf("New autograph from %s", guestName)
+	reviewURL := h.FrontendURL + "/review"
+	body := mailer.NewEntrySubmittedEmail(ownerName, guestName, categoryName, reviewURL)
+
+	if err := h.Mailer.Send(ownerEmail, subject, body); err != nil {
+		log.Printf("notify owner: send failed: %v", err)
+	}
 }

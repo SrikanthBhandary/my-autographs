@@ -15,7 +15,7 @@ storage for images/audio, and a token-gated public API for guest submissions.
 cp .env.example .env
 # edit .env — at minimum set a real JWT_SECRET
 
-docker compose up -d          # starts Postgres on :5432 and MinIO on :9000/:9001
+docker compose up -d          # starts Postgres :5432, MinIO :9000/:9001, Mailpit :1025/:8025
 ```
 
 If using the bundled MinIO for local dev, set these in `.env`:
@@ -28,6 +28,20 @@ S3_PUBLIC_BASE_URL=http://localhost:9000/autograph-uploads
 ```
 Then create the bucket once via the MinIO console at http://localhost:9001
 (login minioadmin/minioadmin), or with the `mc` CLI.
+
+### Email notifications
+
+Owners get an email when a guest leaves a new autograph, so they know to go
+approve it. It's SMTP-based, so it works with any provider — see the
+commented options in `.env.example` (Gmail, SendGrid, Mailgun, Postmark, SES,
+Resend).
+
+For local dev, the bundled **Mailpit** container needs no credentials at
+all — `.env.example`'s defaults already point at it. Every notification
+email lands at **http://localhost:8025** instead of a real inbox.
+
+If `SMTP_HOST` is left blank, notifications are silently disabled (logged at
+startup, then skipped per-send) — nothing else breaks.
 
 ## 3. Run the database migration
 

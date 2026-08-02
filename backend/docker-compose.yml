@@ -29,6 +29,16 @@ services:
     volumes:
       - miniodata:/data
 
+  # Mailpit catches all outgoing mail locally so you can see notification
+  # emails without needing a real SMTP provider during development. Web UI
+  # at http://localhost:8025 — every email sent by the app shows up there.
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+
 volumes:
   pgdata:
   miniodata:

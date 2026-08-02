@@ -10,6 +10,7 @@ import (
 	"github.com/yourorg/autograph-backend/internal/config"
 	"github.com/yourorg/autograph-backend/internal/db"
 	"github.com/yourorg/autograph-backend/internal/handlers"
+	"github.com/yourorg/autograph-backend/internal/mailer"
 	"github.com/yourorg/autograph-backend/internal/middleware"
 	"github.com/yourorg/autograph-backend/internal/storage"
 )
@@ -36,10 +37,24 @@ func main() {
 		log.Fatalf("storage error: %v", err)
 	}
 
+	mail := mailer.New(mailer.Config{
+		Host:      cfg.SMTP.Host,
+		Port:      cfg.SMTP.Port,
+		Username:  cfg.SMTP.Username,
+		Password:  cfg.SMTP.Password,
+		FromEmail: cfg.SMTP.FromEmail,
+		FromName:  cfg.SMTP.FromName,
+	})
+	if !mail.Configured() {
+		log.Println("SMTP_HOST not set — email notifications are disabled")
+	}
+
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+
 	authH := &handlers.AuthHandler{DB: database, Cfg: cfg}
 	catH := &handlers.CategoryHandler{DB: database}
 	linkH := &handlers.ShareLinkHandler{DB: database, ShareURL: cfg.ShareURL}
-	entryH := &handlers.EntryHandler{DB: database, Storage: store}
+	entryH := &handlers.EntryHandler{DB: database, Storage: store, Mailer: mail, FrontendURL: frontendOrigin}
 
 	requireAuth := middleware.RequireAuth(cfg.JWT.Secret)
 	requireShareLink := middleware.RequireValidShareLink(database)
@@ -66,7 +81,7 @@ func main() {
 	mux.Handle("PATCH /api/entries/{id}/approve", requireAuth(http.HandlerFunc(entryH.Approve)))
 	mux.Handle("PATCH /api/entries/{id}/reject", requireAuth(http.HandlerFunc(entryH.Reject)))
 
-	handler := middleware.CORS(os.Getenv("FRONTEND_ORIGIN"))(mux)
+	handler := middleware.CORS(frontendOrigin)(mux)
 
 	log.Printf("listening on :%s", cfg.Server.Port)
 	if err := http.ListenAndServe(":"+cfg.Server.Port, handler); err != nil {

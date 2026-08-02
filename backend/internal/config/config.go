@@ -13,6 +13,7 @@ type Config struct {
 	Server   ServerConfig
 	DB       DBConfig
 	S3       S3Config
+	SMTP     SMTPConfig
 	JWT      JWTConfig
 	ShareURL string // base URL used to build shareable links, e.g. https://myapp.com/submit
 }
@@ -54,6 +55,15 @@ type JWTConfig struct {
 	ExpiryHrs  int
 }
 
+type SMTPConfig struct {
+	Host      string
+	Port      string
+	Username  string
+	Password  string
+	FromEmail string
+	FromName  string
+}
+
 // Load reads configuration from environment variables. In local dev these
 // are typically populated from a .env file (see .env.example) via a tool
 // like `godotenv` or by exporting them in your shell / docker-compose.
@@ -81,6 +91,17 @@ func Load() (*Config, error) {
 		JWT: JWTConfig{
 			Secret:    getEnv("JWT_SECRET", ""),
 			ExpiryHrs: getEnvInt("JWT_EXPIRY_HOURS", 72),
+		},
+		SMTP: SMTPConfig{
+			// Empty host = notifications are silently skipped (logged, not sent).
+			// Point at Mailpit for local dev (see docker-compose.yml) or a real
+			// provider's SMTP relay in production.
+			Host:      getEnv("SMTP_HOST", ""),
+			Port:      getEnv("SMTP_PORT", "1025"),
+			Username:  getEnv("SMTP_USERNAME", ""),
+			Password:  getEnv("SMTP_PASSWORD", ""),
+			FromEmail: getEnv("SMTP_FROM_EMAIL", "noreply@keepsake.local"),
+			FromName:  getEnv("SMTP_FROM_NAME", "Keepsake"),
 		},
 		ShareURL: getEnv("SHARE_BASE_URL", "http://localhost:5173/submit"),
 	}

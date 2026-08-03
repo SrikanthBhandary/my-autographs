@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/yourorg/autograph-backend/internal/config"
@@ -59,14 +60,20 @@ func main() {
 	requireAuth := middleware.RequireAuth(cfg.JWT.Secret)
 	requireShareLink := middleware.RequireValidShareLink(database)
 
+	// Per-IP rate limits on the public, unauthenticated endpoints — these
+	// are the ones a bad actor could hit without any credentials at all.
+	// Owner routes are already gated by JWT so they're lower risk here.
+	authLimiter := middleware.NewRateLimiter(10, time.Minute)   // login/signup: brute-force & spam-signup protection
+	submitLimiter := middleware.NewRateLimiter(20, time.Minute) // guest submissions: spam protection
+
 	mux := http.NewServeMux()
 
 	// --- Public auth routes ---
-	mux.HandleFunc("POST /api/auth/signup", authH.Signup)
-	mux.HandleFunc("POST /api/auth/login", authH.Login)
+	mux.Handle("POST /api/auth/signup", authLimiter.Middleware(http.HandlerFunc(authH.Signup)))
+	mux.Handle("POST /api/auth/login", authLimiter.Middleware(http.HandlerFunc(authH.Login)))
 
 	// --- Public guest submission routes (no login, gated by share-link token) ---
-	mux.Handle("POST /api/submit/{token}", requireShareLink(http.HandlerFunc(entryH.Submit)))
+	mux.Handle("POST /api/submit/{token}", submitLimiter.Middleware(requireShareLink(http.HandlerFunc(entryH.Submit))))
 
 	// --- Owner-only routes (JWT required) ---
 	mux.Handle("GET /api/categories", requireAuth(http.HandlerFunc(catH.List)))

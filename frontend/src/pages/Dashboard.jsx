@@ -19,6 +19,9 @@ export default function Dashboard() {
   const [parentId, setParentId] = useState("");
   const [error, setError] = useState("");
   const [shareUrl, setShareUrl] = useState(null);
+  const [shareLinkInfo, setShareLinkInfo] = useState(null);
+  const [expiresInHours, setExpiresInHours] = useState(""); // "" = never expires
+  const [maxUses, setMaxUses] = useState(""); // "" = unlimited
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -50,8 +53,13 @@ export default function Dashboard() {
   async function handleGenerateLink(categoryId) {
     setCopied(false);
     try {
-      const res = await api.createShareLink({ category_id: categoryId });
+      const res = await api.createShareLink({
+        category_id: categoryId,
+        expires_in_hours: expiresInHours ? Number(expiresInHours) : undefined,
+        max_uses: maxUses ? Number(maxUses) : undefined,
+      });
       setShareUrl(res.url);
+      setShareLinkInfo(res.share_link);
     } catch (err) {
       setError(err.message);
     }
@@ -78,7 +86,7 @@ export default function Dashboard() {
   const topLevel = categories.filter((c) => !c.parent_id);
 
   return (
-    <AppShell categories={categories} selectedId={selectedId} onSelectCategory={(id) => { setSelectedId(id); setShareUrl(null); }}>
+    <AppShell categories={categories} selectedId={selectedId} onSelectCategory={(id) => { setSelectedId(id); setShareUrl(null); setShareLinkInfo(null); }}>
       <header className="main-header">
         <span className="eyebrow">My autographs</span>
         <h1>{selected ? selected.name : "All categories"}</h1>
@@ -125,13 +133,44 @@ export default function Dashboard() {
           <p style={{ color: "var(--ink-soft)", marginTop: 0 }}>
             Anyone with this link can leave an autograph in this category — no account needed on their end.
           </p>
+          <div className="field-grid" style={{ marginBottom: "1rem" }}>
+            <label>
+              Expires
+              <select value={expiresInHours} onChange={(e) => setExpiresInHours(e.target.value)}>
+                <option value="">Never</option>
+                <option value="24">In 24 hours</option>
+                <option value="168">In 7 days</option>
+                <option value="720">In 30 days</option>
+              </select>
+            </label>
+            <label>
+              Max submissions (optional)
+              <input
+                type="number"
+                min="1"
+                placeholder="Unlimited"
+                value={maxUses}
+                onChange={(e) => setMaxUses(e.target.value)}
+              />
+            </label>
+          </div>
           <div className="panel-actions" style={{ justifyContent: "flex-start" }}>
             <button onClick={() => handleGenerateLink(selected.id)}><Link2 size={16} /> Generate link</button>
             <button className="danger" onClick={() => handleDelete(selected.id)}><Trash2 size={16} /> Delete category</button>
           </div>
           {shareUrl && (
             <div className="share-url-box">
-              <span>{shareUrl}</span>
+              <div>
+                <span>{shareUrl}</span>
+                {shareLinkInfo && (
+                  <div className="share-link-meta">
+                    {shareLinkInfo.expires_at
+                      ? `Expires ${new Date(shareLinkInfo.expires_at).toLocaleString()}`
+                      : "Never expires"}
+                    {shareLinkInfo.max_uses ? ` · Limited to ${shareLinkInfo.max_uses} submissions` : ""}
+                  </div>
+                )}
+              </div>
               <button className="ghost" onClick={copyLink}><Copy size={14} /> {copied ? "Copied!" : "Copy"}</button>
             </div>
           )}

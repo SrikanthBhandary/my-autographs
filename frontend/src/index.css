@@ -329,7 +329,7 @@ input:focus, select:focus, textarea:focus {
 
 .share-url-box {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   background: var(--accent-soft);
@@ -340,6 +340,11 @@ input:focus, select:focus, textarea:focus {
   color: var(--accent-dark);
   word-break: break-all;
   margin-top: 1rem;
+}
+.share-link-meta {
+  font-size: 0.85em;
+  color: var(--ink-soft);
+  margin-top: 0.3em;
 }
 
 .empty-panel {

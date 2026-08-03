@@ -1,6 +1,7 @@
 import { Feather, LayoutGrid, ClipboardCheck, BookOpen, Cloud, LogOut } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme, THEMES } from "../context/ThemeContext";
 
 const STAMP_LETTER = { school: "S", college: "C", company: "Co", gym: "G", custom: "•" };
 
@@ -21,6 +22,7 @@ function CategoryNode({ category, children, selectedId, onSelect }) {
 
 export default function AppShell({ children, categories = [], selectedId, onSelectCategory }) {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const topLevel = categories.filter((c) => !c.parent_id);
   const childrenOf = (id) => categories.filter((c) => c.parent_id === id);
 
@@ -75,9 +77,28 @@ export default function AppShell({ children, categories = [], selectedId, onSele
           </div>
         )}
 
-        <button className="ghost" onClick={logout} style={{ marginTop: "auto" }}>
-          <LogOut size={16} /> {user?.name || "Log out"}
-        </button>
+        <div className="sidebar-footer">
+          <div className="theme-picker">
+            <span className="eyebrow">Theme</span>
+            <div className="theme-swatches">
+              {THEMES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`theme-swatch${theme === t.id ? " selected" : ""}`}
+                  style={{ background: `linear-gradient(135deg, ${t.swatch[0]} 50%, ${t.swatch[1]} 50%)` }}
+                  onClick={() => setTheme(t.id)}
+                  title={t.name}
+                  aria-label={`${t.name} theme`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <button className="ghost" onClick={logout}>
+            <LogOut size={16} /> {user?.name || "Log out"}
+          </button>
+        </div>
       </aside>
 
       <main className="app-main">{children}</main>

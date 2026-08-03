@@ -1,5 +1,5 @@
 :root {
-  /* --- palette --- */
+  /* --- palette (default: "keepsake") --- */
   --ink: #1c1e2a;
   --ink-soft: #565a6e;
   --paper: #f1efe9;
@@ -21,6 +21,70 @@
   --radius: 10px;
   --shadow-card: 0 1px 2px rgba(28,30,42,0.04), 0 4px 16px rgba(28,30,42,0.06);
   --shadow-raised: 0 8px 30px rgba(28,30,42,0.10);
+}
+
+/* --- theme: midnight (dark mode) --- */
+[data-theme="midnight"] {
+  --ink: #e8e6df;
+  --ink-soft: #a9a79c;
+  --paper: #17181d;
+  --paper-raised: #1f2128;
+  --line: #2c2e36;
+  --accent: #5fa08c;
+  --accent-dark: #79b6a3;
+  --accent-soft: #1c2b27;
+  --brass: #d4ac74;
+  --brass-soft: #2b2418;
+  --danger: #e58787;
+  --danger-soft: #2e1c1c;
+}
+
+/* --- theme: blush (romantic / wedding) --- */
+[data-theme="blush"] {
+  --ink: #3a2430;
+  --ink-soft: #8a6b78;
+  --paper: #fdf4f2;
+  --paper-raised: #ffffff;
+  --line: #f0dbe0;
+  --accent: #a8506b;
+  --accent-dark: #8a3f57;
+  --accent-soft: #fbe8ed;
+  --brass: #c9a15a;
+  --brass-soft: #f7ecd9;
+  --danger: #a13f3f;
+  --danger-soft: #f5e8e6;
+}
+
+/* --- theme: ocean (cool / professional) --- */
+[data-theme="ocean"] {
+  --ink: #17232b;
+  --ink-soft: #5b6b74;
+  --paper: #f3f7f8;
+  --paper-raised: #ffffff;
+  --line: #dbe6e9;
+  --accent: #1f6f78;
+  --accent-dark: #17555c;
+  --accent-soft: #e2f0f1;
+  --brass: #c08a4e;
+  --brass-soft: #f2e7d8;
+  --danger: #b33f3f;
+  --danger-soft: #f7e6e6;
+}
+
+/* --- theme: sunset (warm / casual) --- */
+[data-theme="sunset"] {
+  --ink: #2e2117;
+  --ink-soft: #8a7565;
+  --paper: #fdf6ee;
+  --paper-raised: #ffffff;
+  --line: #f0ded0;
+  --accent: #c1562c;
+  --accent-dark: #9c431f;
+  --accent-soft: #fbe9de;
+  --brass: #d4a039;
+  --brass-soft: #f8ecd2;
+  --danger: #a13f3f;
+  --danger-soft: #f5e8e6;
 }
 
 * { box-sizing: border-box; }
@@ -201,6 +265,29 @@ input:focus, select:focus, textarea:focus {
 .category-nav-row:hover { background: var(--accent-soft); }
 .category-nav-row.selected { background: var(--accent); color: white; }
 .category-nav-row.selected .stamp { border-color: white; color: white; background: rgba(255,255,255,0.15); }
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+.theme-picker { display: flex; flex-direction: column; gap: 0.5rem; }
+.theme-swatches { display: flex; gap: 0.5rem; padding: 0 0.2rem; }
+.theme-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+}
+.theme-swatch.selected {
+  border-color: var(--paper-raised);
+  box-shadow: 0 0 0 2px var(--ink-soft);
+}
 
 .app-main {
   padding: 2.5rem 3rem;
@@ -453,7 +540,7 @@ input:focus, select:focus, textarea:focus {
   padding: 0.5rem 0.25rem 0;
 }
 .leaf-note {
-  font-size: 12px;
+  font-size: 0.92rem;
   color: var(--ink-soft);
   line-height: 1.55;
   margin: 0;

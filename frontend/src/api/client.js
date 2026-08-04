@@ -75,6 +75,17 @@ export const api = {
   rejectEntry: (id) =>
     fetch(`${API_URL}/entries/${id}/reject`, { method: "PATCH", headers: authHeaders() }).then(handle),
 
+  // --- PDF export (async, backed by RabbitMQ + a worker process) ---
+  exportPDF: (categoryId) =>
+    fetch(`${API_URL}/export/pdf`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ category_id: categoryId || undefined }),
+    }).then(handle),
+
+  getExportJob: (jobId) =>
+    fetch(`${API_URL}/export/pdf/${jobId}`, { headers: authHeaders() }).then(handle),
+
   // --- public guest submission (no auth) ---
   submitEntry: (token, formData) =>
     fetch(`${API_URL}/submit/${token}`, {

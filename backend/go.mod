@@ -10,10 +10,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.0
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.16.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.58.0
+	github.com/go-pdf/fpdf v0.9.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
+	github.com/rabbitmq/amqp091-go v1.13.0
 	golang.org/x/crypto v0.0.0-00010101000000-000000000000
 )
 

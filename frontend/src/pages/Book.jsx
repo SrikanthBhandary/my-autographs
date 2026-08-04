@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { ChevronLeft, ChevronRight, BookOpen, Feather } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, Feather, FileDown, Loader2 } from "lucide-react";
 import AppShell from "../components/AppShell";
 import Page from "../components/Page";
 import { api } from "../api/client";
+import { usePdfExport } from "../hooks/usePdfExport";
 
 export default function Book() {
   const [categories, setCategories] = useState([]);
@@ -44,6 +45,7 @@ export default function Book() {
     [scopedCategoryIds, allEntries]
   );
   const selectedCategory = categories.find((c) => c.id === selectedId);
+  const { status: exportStatus, fileUrl: exportUrl, error: exportError, startExport } = usePdfExport();
 
   function selectCategory(id) {
     setSelectedId(id);
@@ -62,6 +64,29 @@ export default function Book() {
           <span className="eyebrow">Your keepsake</span>
           <h1>{selectedCategory ? selectedCategory.name : "My autograph book"}</h1>
           <p>{entries.length} approved {entries.length === 1 ? "entry" : "entries"}</p>
+
+          {entries.length > 0 && (
+            <div className="export-row">
+              {exportStatus === "completed" && exportUrl ? (
+                <a href={exportUrl} target="_blank" rel="noreferrer" className="export-download">
+                  <FileDown size={16} /> Download PDF
+                </a>
+              ) : (
+                <button
+                  className="ghost"
+                  onClick={() => startExport(selectedId)}
+                  disabled={exportStatus === "pending"}
+                >
+                  {exportStatus === "pending" ? (
+                    <><Loader2 size={16} className="spin" /> Generating PDF…</>
+                  ) : (
+                    <><FileDown size={16} /> Export as PDF</>
+                  )}
+                </button>
+              )}
+              {exportStatus === "failed" && <span className="error export-error">{exportError}</span>}
+            </div>
+          )}
         </header>
 
         {error && <p className="error">{error}</p>}

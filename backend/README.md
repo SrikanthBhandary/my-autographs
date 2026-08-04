@@ -15,7 +15,7 @@ storage for images/audio, and a token-gated public API for guest submissions.
 cp .env.example .env
 # edit .env — at minimum set a real JWT_SECRET
 
-docker compose up -d          # starts Postgres :5432, MinIO :9000/:9001, Mailpit :1025/:8025
+docker compose up -d          # starts Postgres :5432, MinIO :9000/:9001, Mailpit :1025/:8025, RabbitMQ :5672/:15672
 ```
 
 If using the bundled MinIO for local dev, set these in `.env`:
@@ -66,6 +66,25 @@ is needed. In production, just set real environment variables instead — the
 
 Server starts on `:8080` (or `$PORT`).
 
+### PDF export (worker process)
+
+Exporting a book to PDF is async: the API queues a job in RabbitMQ and
+returns immediately; a separate **worker** process actually builds the PDF
+and notifies the browser over WebSocket when it's ready. Run it alongside
+the API:
+
+```bash
+go run ./cmd/worker
+```
+
+You can run more than one worker process for throughput — RabbitMQ spreads
+jobs across whichever workers are running, no config needed. If RabbitMQ
+isn't reachable at API startup, export is disabled gracefully (logged once,
+then the "Export as PDF" button returns a 503) — nothing else breaks.
+
+Watch jobs move through the queue at the RabbitMQ management UI:
+http://localhost:15672 (login `guest`/`guest` for the bundled dev instance).
+
 ## 5. API overview
 
 | Route | Auth | Purpose |
@@ -81,15 +100,23 @@ Server starts on `:8080` (or `$PORT`).
 | `PATCH /api/entries/{id}/approve` | JWT | approve → visible in book |
 | `PATCH /api/entries/{id}/reject` | JWT | reject |
 | `GET /api/entries?status=approved` | JWT | data for the book view |
+| `POST /api/export/pdf` | JWT | queue a PDF export job (`category_id` optional — omit for the whole book) |
+| `GET /api/export/pdf/{id}` | JWT | poll a job's status (fallback if the WebSocket notification is missed) |
+| `GET /api/ws?token=<jwt>` | JWT (query param) | WebSocket — pushes `{job_id, status, file_url}` when an export finishes |
 
 ## 6. Deploying
 
 Any host that runs a Go binary works (Fly.io, Railway, Render, a VPS, ECS).
-Build a static binary with:
+Build static binaries with:
 
 ```bash
 CGO_ENABLED=0 go build -o api ./cmd/api
+CGO_ENABLED=0 go build -o worker ./cmd/worker
 ```
 
-Point `DB_*` at a managed Postgres (RDS, Supabase, Neon, etc.) and `S3_*` at
-real S3 or Cloudflare R2 — no code changes needed, just env vars.
+Point `DB_*` at a managed Postgres (RDS, Supabase, Neon, etc.), `S3_*` at
+real S3 or Cloudflare R2, and `RABBITMQ_URL` at a hosted broker (e.g.
+CloudAMQP's free tier works fine to start) — no code changes needed, just
+env vars. `api` and `worker` are separate deployable processes; run at
+least one of each, and scale `worker` up independently if export volume
+grows.

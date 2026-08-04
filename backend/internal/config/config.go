@@ -16,6 +16,7 @@ type Config struct {
 	SMTP     SMTPConfig
 	JWT      JWTConfig
 	ShareURL string // base URL used to build shareable links, e.g. https://myapp.com/submit
+	RabbitMQURL string
 }
 
 type ServerConfig struct {
@@ -104,6 +105,9 @@ func Load() (*Config, error) {
 			FromName:  getEnv("SMTP_FROM_NAME", "Keepsake"),
 		},
 		ShareURL: getEnv("SHARE_BASE_URL", "http://localhost:5173/submit"),
+		// Empty/unreachable RabbitMQ disables PDF export gracefully (checked
+		// at startup in main.go) rather than crashing the whole app.
+		RabbitMQURL: getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"),
 	}
 
 	if cfg.JWT.Secret == "" {

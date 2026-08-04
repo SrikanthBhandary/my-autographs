@@ -39,6 +39,18 @@ services:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI
 
+  # RabbitMQ backs the async PDF export pipeline: the API publishes a job
+  # here, one or more `go run ./cmd/worker` processes pick it up and build
+  # the PDF, then publish a completion notification the API forwards to the
+  # browser over WebSocket. Management UI at http://localhost:15672
+  # (guest/guest) lets you watch jobs move through the queue.
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+
 volumes:
   pgdata:
   miniodata:

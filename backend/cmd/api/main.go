@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +14,9 @@ import (
 	"github.com/yourorg/autograph-backend/internal/handlers"
 	"github.com/yourorg/autograph-backend/internal/mailer"
 	"github.com/yourorg/autograph-backend/internal/middleware"
+	"github.com/yourorg/autograph-backend/internal/queue"
 	"github.com/yourorg/autograph-backend/internal/storage"
+	"github.com/yourorg/autograph-backend/internal/ws"
 )
 
 func main() {
@@ -52,10 +55,28 @@ func main() {
 
 	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
 
+	// PDF export degrades gracefully if RabbitMQ isn't reachable — the rest
+	// of the app (categories, entries, submissions, everything else) keeps
+	// working fine without it.
+	mq, err := queue.Connect(cfg.RabbitMQURL)
+	if err != nil {
+		log.Printf("rabbitmq unavailable (%v) — PDF export is disabled", err)
+		mq = nil
+	} else {
+		defer mq.Close()
+	}
+
+	hub := ws.NewHub()
+	if mq != nil {
+		go forwardNotifications(mq, hub)
+	}
+
 	authH := &handlers.AuthHandler{DB: database, Cfg: cfg}
 	catH := &handlers.CategoryHandler{DB: database}
 	linkH := &handlers.ShareLinkHandler{DB: database, ShareURL: cfg.ShareURL}
 	entryH := &handlers.EntryHandler{DB: database, Storage: store, Mailer: mail, FrontendURL: frontendOrigin}
+	exportH := &handlers.ExportHandler{DB: database, Queue: mq}
+	wsH := &handlers.WebSocketHandler{Hub: hub, JWTSecret: cfg.JWT.Secret}
 
 	requireAuth := middleware.RequireAuth(cfg.JWT.Secret)
 	requireShareLink := middleware.RequireValidShareLink(database)
@@ -88,10 +109,38 @@ func main() {
 	mux.Handle("PATCH /api/entries/{id}/approve", requireAuth(http.HandlerFunc(entryH.Approve)))
 	mux.Handle("PATCH /api/entries/{id}/reject", requireAuth(http.HandlerFunc(entryH.Reject)))
 
+	mux.Handle("POST /api/export/pdf", requireAuth(http.HandlerFunc(exportH.CreatePDFJob)))
+	mux.Handle("GET /api/export/pdf/{id}", requireAuth(http.HandlerFunc(exportH.GetPDFJob)))
+
+	// Not wrapped in requireAuth: the WebSocket handshake can't carry a
+	// custom Authorization header, so wsH.Serve validates the JWT itself
+	// from a ?token= query param instead.
+	mux.HandleFunc("GET /api/ws", wsH.Serve)
+
 	handler := middleware.CORS(frontendOrigin)(mux)
 
 	log.Printf("listening on :%s", cfg.Server.Port)
 	if err := http.ListenAndServe(":"+cfg.Server.Port, handler); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// forwardNotifications consumes PDF-job-completion events from RabbitMQ's
+// fanout exchange (every API instance gets its own copy) and pushes them
+// down to the relevant user's WebSocket connection, if this instance
+// happens to be holding it.
+func forwardNotifications(mq *queue.Queue, hub *ws.Hub) {
+	deliveries, err := mq.ConsumeNotifications(context.Background())
+	if err != nil {
+		log.Printf("failed to start consuming pdf notifications: %v", err)
+		return
+	}
+	for d := range deliveries {
+		var n queue.JobNotification
+		if err := json.Unmarshal(d.Body, &n); err != nil {
+			log.Printf("failed to unmarshal pdf notification: %v", err)
+			continue
+		}
+		hub.SendToUser(n.UserID, n)
 	}
 }

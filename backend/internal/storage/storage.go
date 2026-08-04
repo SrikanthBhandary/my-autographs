@@ -82,3 +82,19 @@ func (s *Storage) UploadFile(ctx context.Context, categoryID string, fh *multipa
 
 	return fmt.Sprintf("%s/%s", s.publicBaseURL, key), nil
 }
+
+// UploadBytes uploads raw bytes (e.g. a generated PDF) under an exact key —
+// used by the export worker, which builds a file in memory rather than
+// receiving it as a multipart upload.
+func (s *Storage) UploadBytes(ctx context.Context, key string, data []byte, contentType string) (string, error) {
+	_, err := s.uploader.Upload(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(s.bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(data),
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return "", fmt.Errorf("uploading to s3: %w", err)
+	}
+	return fmt.Sprintf("%s/%s", s.publicBaseURL, key), nil
+}

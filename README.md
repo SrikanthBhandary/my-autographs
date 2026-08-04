@@ -29,6 +29,12 @@ export $(grep -v '^#' .env | xargs)
 go run ./cmd/api
 ```
 
+**Worker**
+```
+cd backend
+go run ./cmd/worker 
+```
+
 **Frontend**
 ```bash
 cd frontend
@@ -36,6 +42,7 @@ cp .env.example .env
 npm install
 npm run dev
 ```
+
 
 Then visit http://localhost:5173, sign up as an owner, create a category,
 generate a share link, and open that link in a private/incognito tab to try
@@ -47,9 +54,6 @@ Full details are in `backend/README.md` and `frontend/README.md`.
 
 Built: signup/login, category CRUD (with nesting), share-link generation,
 public guest submission (with a preview/confirm step), owner moderation
-queue, and a simple book view.
+queue, and a simple book view. PDF generation
 
-Not yet built (natural next steps): link expiry/usage-limit UI, multi-image
-carousel in the book view, page-flip animation, email notifications when a
-new submission comes in, and — once this is solid — a React Native app
-reusing `frontend/src/api/client.js` almost as-is.
+

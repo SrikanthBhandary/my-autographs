@@ -50,3 +50,25 @@ type Entry struct {
 	Status      EntryStatus `json:"status"`
 	CreatedAt   time.Time   `json:"created_at"`
 }
+
+type PDFJobStatus string
+
+const (
+	PDFJobPending    PDFJobStatus = "pending"
+	PDFJobProcessing PDFJobStatus = "processing"
+	PDFJobCompleted  PDFJobStatus = "completed"
+	PDFJobFailed     PDFJobStatus = "failed"
+)
+
+// PDFJob tracks an async book-export request. CategoryID is nil when
+// exporting the entire book across all of a user's categories.
+type PDFJob struct {
+	ID          string       `json:"id"`
+	UserID      string       `json:"user_id"`
+	CategoryID  *string      `json:"category_id,omitempty"`
+	Status      PDFJobStatus `json:"status"`
+	FileURL     *string      `json:"file_url,omitempty"`
+	Error       *string      `json:"error,omitempty"`
+	CreatedAt   time.Time    `json:"created_at"`
+	CompletedAt *time.Time   `json:"completed_at,omitempty"`
+}

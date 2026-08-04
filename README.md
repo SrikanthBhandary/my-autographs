@@ -5,6 +5,9 @@ A digital autograph/guestbook app: owners organize entries into categories
 guests to submit an autograph (name, note, photo, audio), review and approve
 submissions, then view them like a flip-book.
 
+
+[![KeepSake](https://img.youtube.com/vi/frJgH5hdcfo/1.jpg)](https://www.youtube.com/watch?v=frJgH5hdcfo)
+
 ```
 autograph-app/
   backend/    Go API — auth, categories, share links, entries, S3 uploads
@@ -50,7 +53,7 @@ the guest submission flow end-to-end.
 
 Full details are in `backend/README.md` and `frontend/README.md`.
 
-[![KeepSake](https://img.youtube.com/vi/frJgH5hdcfo/0.jpg)](https://www.youtube.com/watch?v=frJgH5hdcfo)
+
 
 ## What's here vs. what's next
 

@@ -50,6 +50,8 @@ the guest submission flow end-to-end.
 
 Full details are in `backend/README.md` and `frontend/README.md`.
 
+[![Keep Sake]([https://www.youtube.com/watch?v=frJgH5hdcfo](https://youtu.be/frJgH5hdcfo?si=d5cjk3Ms2WSiBZHw))
+
 ## What's here vs. what's next
 
 Built: signup/login, category CRUD (with nesting), share-link generation,

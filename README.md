@@ -6,7 +6,7 @@ guests to submit an autograph (name, note, photo, audio), review and approve
 submissions, then view them like a flip-book.
 
 
-[![KeepSake](https://img.youtube.com/vi/frJgH5hdcfo/1.jpg)](https://www.youtube.com/watch?v=frJgH5hdcfo)
+[![KeepSake](https://img.youtube.com/vi/frJgH5hdcfo/0.jpg)](https://www.youtube.com/watch?v=frJgH5hdcfo)
 
 ```
 autograph-app/

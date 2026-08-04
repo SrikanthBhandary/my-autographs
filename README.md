@@ -50,7 +50,7 @@ the guest submission flow end-to-end.
 
 Full details are in `backend/README.md` and `frontend/README.md`.
 
-[![Keep Sake]([https://www.youtube.com/watch?v=frJgH5hdcfo](https://youtu.be/frJgH5hdcfo?si=d5cjk3Ms2WSiBZHw))
+[![KeepSake](https://img.youtube.com/vi/frJgH5hdcfo/0.jpg)](https://www.youtube.com/watch?v=frJgH5hdcfo)
 
 ## What's here vs. what's next
 
